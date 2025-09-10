@@ -41,6 +41,65 @@ st.markdown(f"### 📌 **Thuật toán đang chọn:** :blue[{option}]", unsafe_
 # Upload file CSV
 uploaded_file = st.file_uploader("📂 Import Data (CSV)", type="csv")
 
+# if uploaded_file:
+#     df = pd.read_csv(uploaded_file)
+#     st.subheader("Dữ liệu đầu vào")
+#     st.dataframe(df.head(), use_container_width=True)
+
+#     # ================= Apriori =================
+#     if option == "Apriori":
+#         st.subheader("📑 Luật kết hợp - Apriori")
+#         minsup = st.slider("Min Support", 0.1, 1.0, 0.5)
+#         minconf = st.slider("Min Confidence", 0.1, 1.0, 0.7)
+#         rules = apriori.run_apriori(df, minsup, minconf)
+#         st.write("#### Luật sinh ra")
+#         st.dataframe(rules, use_container_width=True)
+
+#     # ================= Naive Bayes =================
+#     elif option == "Naive Bayes":
+#         st.subheader("🎯 Phân lớp - Naive Bayes")
+#         target = st.selectbox("Chọn cột nhãn", df.columns)
+#         acc, preds = naive_bayes.run_naive_bayes(df, target)
+#         st.write(f"**Độ chính xác:** {acc:.2f}")
+#         st.write("#### Kết quả dự đoán")
+#         st.dataframe(preds, use_container_width=True)
+
+#     # ================= Decision Tree =================
+#     elif option == "Decision Tree":
+#         st.subheader("🌳 Cây quyết định - ID3")
+#         target = st.selectbox("Chọn cột nhãn", df.columns)
+#         acc, graph = decision_tree.run_decision_tree(df, target)
+#         st.write(f"**Độ chính xác:** {acc:.2f}")
+#         st.graphviz_chart(graph.source)
+
+#     # ================= K-means =================
+#     elif option == "K-means":
+#         st.subheader("📌 Gom cụm - K-means")
+#         k = st.slider("Số cụm k", 2, 10, 3)
+#         clustered, model = kmeans.run_kmeans(df, k)
+#         st.write("#### Dữ liệu sau phân cụm")
+#         st.dataframe(clustered, use_container_width=True)
+
+#         if df.shape[1] >= 2:
+#             col1, col2, col3 = st.columns([1, 3, 1])
+#             with col2:
+#                 fig, ax = plt.subplots(figsize=(10, 6))
+#                 sns.scatterplot(
+#                     x=df.iloc[:, 0], y=df.iloc[:, 1],
+#                     hue=clustered['cluster'], palette="Set2", ax=ax, s=80
+#                 )
+#                 plt.title("K-means Clustering", fontsize=14)
+#                 st.pyplot(fig)
+
+#     # ================= Rough Set =================
+#     elif option == "Rough Set":
+#         st.subheader("📐 Luật quyết định - Rough Set")
+#         target = st.selectbox("Chọn cột quyết định", df.columns)
+#         rules = roughset.run_roughset(df, target)
+#         st.write("#### Các luật sinh ra")
+#         for r in rules:
+#             st.markdown(f"- {r}")
+
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
     st.subheader("Dữ liệu đầu vào")
@@ -51,18 +110,28 @@ if uploaded_file:
         st.subheader("📑 Luật kết hợp - Apriori")
         minsup = st.slider("Min Support", 0.1, 1.0, 0.5)
         minconf = st.slider("Min Confidence", 0.1, 1.0, 0.7)
-        rules = apriori.run_apriori(df, minsup, minconf)
+        rules, fig = apriori.run_apriori(df, minsup, minconf)
+
         st.write("#### Luật sinh ra")
         st.dataframe(rules, use_container_width=True)
+
+        if fig:
+            st.write("#### Biểu đồ Support - Confidence - Lift")
+            st.pyplot(fig)
 
     # ================= Naive Bayes =================
     elif option == "Naive Bayes":
         st.subheader("🎯 Phân lớp - Naive Bayes")
         target = st.selectbox("Chọn cột nhãn", df.columns)
-        acc, preds = naive_bayes.run_naive_bayes(df, target)
+        acc, preds, fig = naive_bayes.run_naive_bayes(df, target)
+
         st.write(f"**Độ chính xác:** {acc:.2f}")
         st.write("#### Kết quả dự đoán")
         st.dataframe(preds, use_container_width=True)
+
+        if fig:
+            st.write("#### Confusion Matrix")
+            st.pyplot(fig)
 
     # ================= Decision Tree =================
     elif option == "Decision Tree":
@@ -76,26 +145,25 @@ if uploaded_file:
     elif option == "K-means":
         st.subheader("📌 Gom cụm - K-means")
         k = st.slider("Số cụm k", 2, 10, 3)
-        clustered, model = kmeans.run_kmeans(df, k)
+        clustered, model, fig = kmeans.run_kmeans(df, k)
+
         st.write("#### Dữ liệu sau phân cụm")
         st.dataframe(clustered, use_container_width=True)
 
-        if df.shape[1] >= 2:
-            col1, col2, col3 = st.columns([1, 3, 1])
-            with col2:
-                fig, ax = plt.subplots(figsize=(10, 6))
-                sns.scatterplot(
-                    x=df.iloc[:, 0], y=df.iloc[:, 1],
-                    hue=clustered['cluster'], palette="Set2", ax=ax, s=80
-                )
-                plt.title("K-means Clustering", fontsize=14)
-                st.pyplot(fig)
+        if fig:
+            st.write("#### Biểu đồ Scatter theo cụm")
+            st.pyplot(fig)
 
     # ================= Rough Set =================
     elif option == "Rough Set":
         st.subheader("📐 Luật quyết định - Rough Set")
         target = st.selectbox("Chọn cột quyết định", df.columns)
-        rules = roughset.run_roughset(df, target)
+        reduct, rules = roughset.run_roughset(df, target)
+
+        st.write("#### Reduct tìm được")
+        st.write(reduct)
+
         st.write("#### Các luật sinh ra")
         for r in rules:
             st.markdown(f"- {r}")
+
