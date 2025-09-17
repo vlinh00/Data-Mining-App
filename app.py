@@ -107,4 +107,5 @@ if uploaded_file:
         st.write("#### Các luật sinh ra")
         for r in rules:
             st.markdown(f"- {r}")
-
+else:
+    st.info("⬆️ Vui lòng upload file CSV để bắt đầu.")
